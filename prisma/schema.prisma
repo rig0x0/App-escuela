@@ -1,13 +1,140 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id              Int              @id @default(autoincrement())
+  nombre          String
+  email           String           @unique
+  tipo            TipoUsuario
+  fechaCreacion   DateTime         @default(now())
+  alumnos         Alumno[]
+  docentes        Docente[]
+  admin           Administrativo[]  // Para ADMIN y ADMINISTRATIVO
+  calificaciones  Calificacion[]
+  inscripciones   Inscripcion[]
+}
+
+model Alumno {
+  usuarioId       Int              @id
+  usuario         Usuario          @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  matricula       String           @unique
+  grado           String
+  calificaciones  Calificacion[]
+  inscripciones   Inscripcion[]
+}
+
+model Docente {
+  usuarioId       Int              @id
+  usuario         Usuario          @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  departamento    String?
+  asignaciones    AsignacionDocente[]
+}
+
+model Administrativo {
+  usuarioId       Int              @id
+  usuario         Usuario          @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  puesto          String
+}
+
+model Semestre {
+  id              Int              @id @default(autoincrement())
+  nombre          String           @unique  // ej. '2026-1'
+  fechaInicio     DateTime
+  fechaFin        DateTime
+  grupos          Grupo[]
+  asignaciones    AsignacionDocente[]
+  calificaciones  Calificacion[]
+  inscripciones   Inscripcion[]  // Indirecto vía grupos
+}
+
+model Materia {
+  id              Int              @id @default(autoincrement())
+  nombre          String
+  descripcion     String?
+  asignaciones    AsignacionDocente[]
+  calificaciones  Calificacion[]
+}
+
+model AsignacionDocente {
+  id          Int      @id @default(autoincrement())
+  docenteId   Int
+  materiaId   Int
+  semestreId  Int
+  docente     Docente  @relation(fields: [docenteId], references: [usuarioId])
+  materia     Materia  @relation(fields: [materiaId], references: [id])
+  semestre    Semestre @relation(fields: [semestreId], references: [id])
+  
+  horarios    Horario[] // <-- Nuevo: Para los horarios de clase
+  
+  @@unique([docenteId, materiaId, semestreId])
+}
+
+model Grupo {
+  id              Int              @id @default(autoincrement())
+  nombre          String           // ej. 'Grupo A'
+  semestreId      Int
+  semestre        Semestre         @relation(fields: [semestreId], references: [id])
+  inscripciones   Inscripcion[]
+  calificaciones  Calificacion[]
+}
+
+model Inscripcion {
+  id        Int     @id @default(autoincrement())
+  alumnoId  Int
+  grupoId   Int
+  // Cambiamos Usuario por Alumno y referenciamos usuarioId
+  alumno    Alumno  @relation(fields: [alumnoId], references: [usuarioId])
+  grupo     Grupo   @relation(fields: [grupoId], references: [id])
+  
+  @@unique([alumnoId, grupoId])
+}
+
+model Calificacion {
+  id            Int      @id @default(autoincrement())
+  alumnoId      Int
+  materiaId     Int
+  grupoId       Int
+  semestreId    Int
+  calificacion  Float
+  tipoEval      String
+  fecha         DateTime @default(now())
+  
+  // Cambiamos Usuario por Alumno y referenciamos usuarioId
+  alumno        Alumno   @relation(fields: [alumnoId], references: [usuarioId])
+  materia       Materia  @relation(fields: [materiaId], references: [id])
+  grupo         Grupo    @relation(fields: [grupoId], references: [id])
+  semestre      Semestre @relation(fields: [semestreId], references: [id])
+}
+
+enum TipoUsuario {
+  ALUMNO
+  DOCENTE
+  ADMINISTRATIVO
+  ADMIN
+}
+
+model Horario {
+  id          Int      @id @default(autoincrement())
+  diaSemana   String   // Lunes, Martes...
+  horaInicio  String   // "07:00"
+  horaFin     String   // "09:00"
+  aula        String   // "Laboratorio 3"
+  
+  // Relación con la asignación para saber quién y qué materia
+  asignacionId Int
+  asignacion   AsignacionDocente @relation(fields: [asignacionId], references: [id])
+}
+
+enum TipoEvaluacion {
+  PARCIAL_1
+  PARCIAL_2
+  PARCIAL_3
+  FINAL
+  EXTRAORDINARIO
 }
