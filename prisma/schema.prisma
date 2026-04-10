@@ -11,13 +11,14 @@ model Usuario {
   id              Int              @id @default(autoincrement())
   nombre          String
   email           String           @unique
-  tipo            TipoUsuario
+  password        String   // 👈 este es el importante
+  tipo            String   // En lugar de TipoUsuario
   fechaCreacion   DateTime         @default(now())
-  alumnos         Alumno[]
-  docentes        Docente[]
-  admin           Administrativo[]  // Para ADMIN y ADMINISTRATIVO
-  calificaciones  Calificacion[]
-  inscripciones   Inscripcion[]
+  // RELACIONES 1 a 1 (Un usuario es O alumno, O docente, etc.)
+  alumno          Alumno?         // Singular y opcional
+  docente         Docente?        // Singular y opcional
+  administrativo  Administrativo? // Singular y opcional
+
 }
 
 model Alumno {
@@ -50,7 +51,6 @@ model Semestre {
   grupos          Grupo[]
   asignaciones    AsignacionDocente[]
   calificaciones  Calificacion[]
-  inscripciones   Inscripcion[]  // Indirecto vía grupos
 }
 
 model Materia {
@@ -102,7 +102,7 @@ model Calificacion {
   grupoId       Int
   semestreId    Int
   calificacion  Float
-  tipoEval      String
+  tipo          String   // En lugar de TipoEvaluacion
   fecha         DateTime @default(now())
   
   // Cambiamos Usuario por Alumno y referenciamos usuarioId
@@ -110,13 +110,6 @@ model Calificacion {
   materia       Materia  @relation(fields: [materiaId], references: [id])
   grupo         Grupo    @relation(fields: [grupoId], references: [id])
   semestre      Semestre @relation(fields: [semestreId], references: [id])
-}
-
-enum TipoUsuario {
-  ALUMNO
-  DOCENTE
-  ADMINISTRATIVO
-  ADMIN
 }
 
 model Horario {
@@ -131,10 +124,3 @@ model Horario {
   asignacion   AsignacionDocente @relation(fields: [asignacionId], references: [id])
 }
 
-enum TipoEvaluacion {
-  PARCIAL_1
-  PARCIAL_2
-  PARCIAL_3
-  FINAL
-  EXTRAORDINARIO
-}
