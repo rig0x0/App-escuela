@@ -5,70 +5,70 @@ import bcrypt from "bcryptjs"
 import { revalidatePath } from "next/cache"
 
 export async function createUsuario(rawData: any) {
-    // 1. Validar con Zod
-    const validation = usuarioSchema.safeParse(rawData);
+  // 1. Validar con Zod
+  const validation = usuarioSchema.safeParse(rawData);
 
-    if (!validation.success) {
-        // Retornamos los errores formateados
-        return {
-            error: "Datos inválidos",
-            details: validation.error.flatten().fieldErrors
-        };
+  if (!validation.success) {
+    // Retornamos los errores formateados
+    return {
+      error: "Datos inválidos",
+      details: validation.error.flatten().fieldErrors
+    };
+  }
+
+  const data = validation.data; // Aquí los datos ya están limpios y tipados
+
+  try {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    // 2. Crear el usuario con su perfil correspondiente
+    const nuevoUsuario = await prisma.usuario.create({
+      data: {
+        nombre: data.nombre,
+        email: data.email,
+        password: hashedPassword,
+        tipo: data.tipo,
+        // Usamos escrituras anidadas según el tipo
+        ...(data.tipo === 'ALUMNO' && {
+          alumno: {
+            create: {
+              matricula: data.matricula!,
+              grado: data.grado!,
+            }
+          }
+        }),
+        ...(data.tipo === 'DOCENTE' && {
+          docente: {
+            create: {
+              departamento: data.departamento!,
+            }
+          }
+        }),
+        // AQUÍ EL CAMBIO: Solo si es ADMINISTRATIVO (Admin se queda solo en la tabla Usuario)
+        ...(data.tipo === 'ADMINISTRATIVO' && {
+          administrativo: {
+            create: { puesto: data.puesto! }
+          }
+        }),
+      },
+    });
+
+    // 3. Limpiar el cache para que los cambios se vean reflejados
+    revalidatePath("/usuarios"); // Ajusta a la ruta donde listes tus usuarios
+
+    const { password: _, ...userWithoutPassword } = nuevoUsuario;
+    return { success: true, user: userWithoutPassword };
+
+  } catch (error: any) {
+    console.error("ERROR_CREATING_USER:", error);
+
+    // Manejo de errores comunes (ej. email duplicado)
+    if (error.code === 'P2002') {
+      return { error: "El correo electrónico o la matrícula ya están registrados." };
     }
 
-    const data = validation.data; // Aquí los datos ya están limpios y tipados
-
-    try {
-        const hashedPassword = await bcrypt.hash(data.password, 10);
-
-        // 2. Crear el usuario con su perfil correspondiente
-        const nuevoUsuario = await prisma.usuario.create({
-            data: {
-                nombre: data.nombre,
-                email: data.email,
-                password: hashedPassword,
-                tipo: data.tipo,
-                // Usamos escrituras anidadas según el tipo
-                ...(data.tipo === 'ALUMNO' && {
-                    alumno: {
-                        create: {
-                            matricula: data.matricula!,
-                            grado: data.grado!,
-                        }
-                    }
-                }),
-                ...(data.tipo === 'DOCENTE' && {
-                    docente: {
-                        create: {
-                            departamento: data.departamento!,
-                        }
-                    }
-                }),
-                // AQUÍ EL CAMBIO: Solo si es ADMINISTRATIVO (Admin se queda solo en la tabla Usuario)
-                ...(data.tipo === 'ADMINISTRATIVO' && {
-                    administrativo: {
-                        create: { puesto: data.puesto! }
-                    }
-                }),
-            },
-        });
-
-        // 3. Limpiar el cache para que los cambios se vean reflejados
-        revalidatePath("/usuarios"); // Ajusta a la ruta donde listes tus usuarios
-
-        const { password: _, ...userWithoutPassword } = nuevoUsuario;
-        return { success: true, user: userWithoutPassword };
-
-    } catch (error: any) {
-        console.error("ERROR_CREATING_USER:", error);
-
-        // Manejo de errores comunes (ej. email duplicado)
-        if (error.code === 'P2002') {
-            return { error: "El correo electrónico o la matrícula ya están registrados." };
-        }
-
-        return { error: "Hubo un error al crear el usuario. Intenta de nuevo." };
-    }
+    return { error: "Hubo un error al crear el usuario. Intenta de nuevo." };
+  }
 }
 // app/actions/usuarios-actions.ts
 export async function getUsuarios({
@@ -99,6 +99,11 @@ export async function getUsuarios({
             role ? { tipo: role } : {},
           ],
         },
+        include: { // <--- ESTO ES LO QUE FALTA
+          alumno: true,
+          docente: true,
+          administrativo: true,
+        },
         skip,
         take: limit,
         orderBy: { nombre: 'asc' },
@@ -125,14 +130,14 @@ export async function getUsuarios({
       totalItems: total
     };
   } catch (error) {
-  console.error(error);
-  return { 
-    usuarios: [], 
-    totalPages: 1, 
-    totalItems: 0, 
-    error: "No se pudieron cargar los usuarios" 
-  };
-}
+    console.error(error);
+    return {
+      usuarios: [],
+      totalPages: 1,
+      totalItems: 0,
+      error: "No se pudieron cargar los usuarios"
+    };
+  }
 }
 
 export async function deleteUsuario(id: number) {
@@ -140,25 +145,55 @@ export async function deleteUsuario(id: number) {
     await prisma.usuario.delete({
       where: { id },
     });
-    
+
     // Esto es CLAVE: obliga a Next.js a refrescar la tabla
-    revalidatePath("/usuarios"); 
-    
+    revalidatePath("/usuarios");
+
     return { success: true };
   } catch (error) {
     return { success: false, error: "No se pudo eliminar el usuario" };
   }
 }
 
-export async function updateUsuario(id: number, data: any) {
+export async function updateUsuario(id: number, rawData: any) {
   try {
-    const usuario = await prisma.usuario.update({
+    // 1. Extraemos los datos. 'tipo' lo recibimos pero NO lo mandamos a actualizar en Prisma por seguridad.
+    const { password, matricula, grado, departamento, puesto, tipo, ...datosBase } = rawData;
+
+    let dataParaPrisma: any = { ...datosBase };
+
+    // 2. Hash de password solo si se escribió algo
+    if (password && password.trim() !== "") {
+      dataParaPrisma.password = await bcrypt.hash(password, 10);
+    }
+
+    // 3. Actualizamos solo la relación correspondiente al tipo actual
+    if (tipo === 'ALUMNO') {
+      dataParaPrisma.alumno = {
+        update: { matricula: matricula || '', grado: grado || '' }
+      };
+    } else if (tipo === 'DOCENTE') {
+      dataParaPrisma.docente = {
+        update: { departamento: departamento || '' }
+      };
+    } else if (tipo === 'ADMINISTRATIVO') {
+      dataParaPrisma.administrativo = {
+        update: { puesto: puesto || '' }
+      };
+    }
+
+    const usuarioActualizado = await prisma.usuario.update({
       where: { id },
-      data: data,
+      data: dataParaPrisma,
     });
+
     revalidatePath("/usuarios");
-    return { success: true, user: usuario };
+
+    const { password: _, ...userSafe } = usuarioActualizado;
+    return { success: true, user: userSafe };
+
   } catch (error) {
-    return { success: false, error: "Error al actualizar el usuario" };
+    console.error("UPDATE_ERROR:", error);
+    return { success: false, error: "Error al actualizar los datos." };
   }
 }

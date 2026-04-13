@@ -4,10 +4,10 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/navbar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,20 +35,21 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
       <body className="min-h-full flex flex-col"><ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <SidebarProvider>
-              <AppSidebar />
-             <main className="container mx-auto bg-blue-100">
-              <SidebarTrigger />
-              <Navbar />
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <SidebarProvider>
+          <AppSidebar />
+          <div className="flex-1 flex flex-col">
+            <Navbar />
+            <main className="bg-blue-100">
               {children}
             </main>
-            </SidebarProvider>
-          </ThemeProvider></body>
+          </div>
+        </SidebarProvider>
+      </ThemeProvider></body>
     </html>
   );
 }

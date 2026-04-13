@@ -32,7 +32,7 @@ export default async function UsuariosPage({
   }
 
   return (
-    <div>
+    <div className="container mx-auto p-4">
       <div className="m-5 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-1">Usuarios</h1>
@@ -40,9 +40,7 @@ export default async function UsuariosPage({
         </div>
         <UsersForm />
       </div>
-      <Card className="mx-5">
-
-
+      <Card className=" mb-5">
         <CardHeader>
           <div className="flex justify-between">
             {/* BUSCADOR */}
@@ -86,7 +84,11 @@ export default async function UsuariosPage({
                   <TableCell>{u.tipo}</TableCell>
                   <TableCell className="text-center">
                     {/* Le pasamos el ID y el nombre de cada usuario */}
-                    <ButtonActions userId={u.id} userName={u.nombre} />
+                    <ButtonActions
+                      userId={u.id}
+                      userName={u.nombre}
+                      userFullData={u} // <--- Esto es vital para que UserEdit tenga datos
+                    />
                   </TableCell>
                 </TableRow>
               ))}
