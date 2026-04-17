@@ -172,6 +172,14 @@ export function UserEdit({ user, open, setOpen }: UserEditProps) {
                             </div>
                         </div>
 
+                        <div className="grid gap-2">
+                            <Label htmlFor="telefono">Telefono</Label>
+                            <Input
+                                id="telefono"
+                                placeholder="Ej. 555-1234"
+                            />
+                        </div>
+
                         {/* TIPO DE USUARIO (Solo lectura) */}
                         <div className="grid gap-2">
                             <Label htmlFor="edit-tipo">Tipo de Usuario</Label>

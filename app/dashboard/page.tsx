@@ -1,7 +1,8 @@
+import { SwitchDescription } from "./form";
 
 export default function DashboardPage() {
   return (
-    <div>DashboardPage</div>
+    <div><SwitchDescription/></div>
   )
 }
 

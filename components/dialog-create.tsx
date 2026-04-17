@@ -17,6 +17,7 @@ import { useState } from 'react'
 import { Eye, EyeOff } from "lucide-react" // Importa los iconos
 import { createUsuario } from "@/app/actions/usuarios-actions"
 import { usuarioSchema } from "@/lib/validations/usuarios"
+import { ScrollArea } from "./ui/scroll-area"
 
 // Importante: Que coincida con tu Prisma Enum
 type TipoUsuario = 'ALUMNO' | 'DOCENTE' | 'ADMINISTRATIVO' | 'ADMIN' | ''
@@ -77,10 +78,10 @@ export function UsersForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // 1. VALIDACIÓN EN EL CLIENTE
     const validation = usuarioSchema.safeParse(formData)
-    
+
     if (!validation.success) {
       // Si falla, extraemos los errores y los ponemos en el estado
       const fieldErrors = validation.error.flatten().fieldErrors
@@ -94,9 +95,9 @@ export function UsersForm() {
     // ... manejar respuesta del server
     if (resultado.success) {
       console.log("¡Usuario creado con éxito!", resultado.user);
-      
+
       // 1. Cerramos el Dialog cambiando el estado a false
-      setOpen(false); 
+      setOpen(false);
 
       // 2. Limpiamos el formulario para que la próxima vez esté vacío
       resetForm();
@@ -110,9 +111,9 @@ export function UsersForm() {
   }
 
   const ErrorMessage = ({ message }: { message?: string }) => {
-  if (!message) return null;
-  return <p className="text-[0.8rem] font-medium text-destructive">{message}</p>;
-};
+    if (!message) return null;
+    return <p className="text-[0.8rem] font-medium text-destructive">{message}</p>;
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -129,6 +130,8 @@ export function UsersForm() {
               Completa los campos para crear un nuevo usuario en la plataforma.
             </DialogDescription>
           </DialogHeader>
+
+          <ScrollArea className="h-95">
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -168,7 +171,7 @@ export function UsersForm() {
                   placeholder="Ingresa una contraseña segura"
                   className={`pr-10 ${errors.password ? "border-destructive focus-visible:ring-destructive" : ""}`} // Padding a la derecha para que el texto no choque con el icono
                 />
-                  <ErrorMessage message={errors.password?.[0]} />
+                <ErrorMessage message={errors.password?.[0]} />
                 <button
                   type="button" // IMPORTANTE: tipo button para que no envíe el formulario
                   onClick={() => setShowPassword(!showPassword)}
@@ -181,6 +184,14 @@ export function UsersForm() {
                   )}
                 </button>
               </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="telefono">Telefono</Label>
+              <Input
+                id="telefono"
+                placeholder="Ej. 555-1234"
+              />
             </div>
 
             <div className="grid gap-2">
@@ -225,6 +236,47 @@ export function UsersForm() {
                     <ErrorMessage message={errors.grado?.[0]} />
                   </div>
                 </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="carreraTecnica">Carrera Tecnica</Label>
+                    <Select>
+                      <SelectTrigger >
+                        <SelectValue placeholder="Asigne una carrera" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="agropecuario">Agropecuario</SelectItem>
+                        <SelectItem value="mecanica">Mecánica</SelectItem>
+                        <SelectItem value="electronica">Electrónica</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="grid gap-1">
+                      <Label className="text-xs">Semestre</Label>
+                      <Select>
+                        <SelectTrigger >
+                          <SelectValue placeholder="Asigne un semestre" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="semestre1">Semestre 1</SelectItem>
+                          <SelectItem value="semestre2">Semestre 2</SelectItem>
+                          <SelectItem value="semestre3">Semestre 3</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-1">
+                      <Label className="text-xs">Grupo</Label>
+                      <Select>
+                        <SelectTrigger >
+                          <SelectValue placeholder="Asigne un grupo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="grupo1">Grupo 1</SelectItem>
+                          <SelectItem value="grupo2">Grupo 2</SelectItem>
+                          <SelectItem value="grupo3">Grupo 3</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
               </div>
             )}
 
@@ -256,6 +308,7 @@ export function UsersForm() {
               </div>
             )}
           </div>
+          </ScrollArea>
 
           <DialogFooter className="sm:justify-between flex items-center ">
             <DialogClose asChild>

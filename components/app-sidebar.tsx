@@ -8,10 +8,15 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Users } from "lucide-react"
+import { BookOpenText, ChevronRight, University, Users } from "lucide-react"
 import Link from "next/link"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible"
+
 
 export function AppSidebar() {
   return (
@@ -33,9 +38,39 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuAction className="peer-data-[active=true]/menu-button:opacity-100" />
+            <SidebarMenuItem >
+              <Link href="/materias">
+                <SidebarMenuButton >
+                  <BookOpenText />
+                  <span className="text-xl">Materias</span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
+            <Collapsible>
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild className="w-full">
+                  <SidebarMenuButton>
+                    <University />
+                  <span className="text-xl">Escuela</span>
+                    <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <Link href="/grupos">
+                        <SidebarMenuSubButton>Grupos</SidebarMenuSubButton>
+                      </Link>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <Link href="/semestre">
+                      <SidebarMenuSubButton>Semestres</SidebarMenuSubButton>
+                      </Link>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
           </SidebarMenu>
         </SidebarGroup >
       </SidebarContent>
