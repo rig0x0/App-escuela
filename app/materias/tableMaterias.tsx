@@ -6,6 +6,8 @@ import { SearchInput } from "@/components/search-input";
 import { LimitSelector } from "@/components/limit-selector";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import MateriaActions from "@/app/materias/buttons-materia-actions";
+import { AsignarDocenteDialog } from "./asignar-docente-dialog";
+import { RemoverDocenteButton } from "./remover-docente-button";
 
 interface TableMateriasProps {
   searchParams: Promise<{ q?: string; page?: string; limit?: string }>;
@@ -34,24 +36,25 @@ export default async function TableMaterias({ searchParams }: TableMateriasProps
   return (
     <Card className="mb-5">
       <CardHeader>
-          <div className="flex justify-between items-end gap-4">
-            <div className="w-100 space-y-2">
-              <Label>Buscar materia o descripción</Label>
-              <SearchInput defaultValue={query} />
-            </div>
-            <div className="w-32 space-y-2">
-              <Label>Por página</Label>
-              <LimitSelector defaultValue={limit.toString()} />
-            </div>
+        <div className="flex justify-between items-end gap-4">
+          <div className="w-100 space-y-2">
+            <Label>Buscar materia o descripción</Label>
+            <SearchInput defaultValue={query} />
           </div>
-        </CardHeader>
+          <div className="w-32 space-y-2">
+            <Label>Por página</Label>
+            <LimitSelector defaultValue={limit.toString()} />
+          </div>
+        </div>
+      </CardHeader>
       <CardContent>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[30%]">Nombre</TableHead>
-                <TableHead className="w-[50%]">Descripción</TableHead>
+                <TableHead className="w-[25%]">Nombre</TableHead>
+                <TableHead className="w-[35%]">Descripción</TableHead>
+                <TableHead className="w-[20%]">Responsable</TableHead>
                 <TableHead className="text-center w-[20%]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -69,11 +72,30 @@ export default async function TableMaterias({ searchParams }: TableMateriasProps
                     <TableCell className="text-sm text-gray-600 dark:text-gray-400 italic line-clamp-1">
                       {m.descripcion || "Sin descripción"}
                     </TableCell>
+                    <TableCell>
+                      {m.asignaciones && m.asignaciones.length > 0 ? (
+                        <div className="flex items-center justify-between gap-2 group">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium leading-none">
+                              {m.asignaciones[0].docente.usuario.nombre}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground uppercase mt-1">
+                              Ciclo: {m.asignaciones[0].semestre.nombre}
+                            </span>
+                          </div>
+
+                          {/* El botón de remover */}
+                          <RemoverDocenteButton asignacionId={m.asignaciones[0].id} />
+                        </div>
+                      ) : (
+                        <AsignarDocenteDialog materiaId={m.id} />
+                      )}
+                    </TableCell>
                     <TableCell className="text-center">
-                      <MateriaActions 
-                        materiaId={m.id} 
-                        materiaName={m.nombre} 
-                        materiaFullData={m} 
+                      <MateriaActions
+                        materiaId={m.id}
+                        materiaName={m.nombre}
+                        materiaFullData={m}
                       />
                     </TableCell>
                   </TableRow>

@@ -107,6 +107,26 @@ export async function getMaterias({
             { descripcion: { contains: query } },
           ],
         },
+        // --- AQUÍ LA MAGIA ---
+        include: {
+          asignaciones: {
+            include: {
+              docente: {
+                include: {
+                  usuario: {
+                    select: { nombre: true } // Solo ocupamos el nombre del docente
+                  }
+                }
+              },
+              semestre: {
+                select: { nombre: true } // Solo ocupamos el nombre del semestre (ej. 2026-1)
+              }
+            },
+            take: 1,           // Solo nos interesa el responsable actual/último
+            orderBy: { id: 'desc' } // El más reciente primero
+          }
+        },
+        // ---------------------
         skip,
         take: limit,
         orderBy: { nombre: 'asc' },
@@ -134,5 +154,65 @@ export async function getMaterias({
       totalItems: 0,
       error: "No se pudieron cargar las materias"
     };
+  }
+}
+
+export async function asignarMateriaADocente({ 
+  materiaId, 
+  docenteId, 
+  semestreId 
+}: { 
+  materiaId: number, 
+  docenteId: number, 
+  semestreId: number 
+}) {
+  try {
+    const nuevaAsignacion = await prisma.asignacionDocente.create({
+      data: {
+        materiaId,
+        docenteId,
+        semestreId
+      }
+    });
+
+    revalidatePath("/materias");
+    return { success: true, data: nuevaAsignacion };
+  } catch (error: any) {
+    // Manejo de error por si ya existe esa combinación exacta (unique constraint)
+    if (error.code === 'P2002') {
+      return { success: false, error: "Este docente ya está asignado a esta materia en este semestre." };
+    }
+    return { success: false, error: "Error al realizar la asignación." };
+  }
+}
+
+export async function getDocentesDisponibles() {
+  try {
+    const docentesRaw = await prisma.docente.findMany({
+      include: { usuario: { select: { nombre: true } } },
+    });
+
+    const data = docentesRaw.map(d => ({
+      id: d.usuarioId,
+      nombre: d.usuario.nombre
+    }));
+
+    return { success: true, docentes: data }; // Aquí data siempre será un array []
+  } catch (error) {
+    return { success: false, docentes: [], error: "Error..." }; // Devolvemos array vacío aquí también
+  }
+}
+
+export async function removerAsignacionDocente(asignacionId: number) {
+  try {
+    await prisma.asignacionDocente.delete({
+      where: { id: asignacionId }
+    });
+
+    revalidatePath("/materias"); // Para que la tabla se refresque sola
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "No se pudo eliminar la asignación" };
   }
 }

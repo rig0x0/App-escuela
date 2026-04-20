@@ -7,6 +7,8 @@ import { LimitSelector } from "@/components/limit-selector";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import GrupoActions from "./buttons-table";
 import prisma from "@/lib/prisma";
+import Link from "next/link"; // Importante para la navegación
+import { Users } from "lucide-react"; // Icono de la imagen
 
 interface TableGruposProps {
   searchParams: Promise<{ q?: string; page?: string; limit?: string }>;
@@ -19,7 +21,7 @@ export default async function TableGrupos({ searchParams }: TableGruposProps) {
   const page = Number(params.page) || 1;
   const limit = Number(params.limit) || 5;
 
-  // Obtenemos los grupos y también la lista de semestres para los modales de edición
+  // Obtenemos los grupos y también la lista de semestres
   const [{ grupos, totalPages, error }, semestres] = await Promise.all([
     getGrupos({ query, page, limit }),
     prisma.semestre.findMany({ select: { id: true, nombre: true }, orderBy: { nombre: 'desc' } })
@@ -54,15 +56,16 @@ export default async function TableGrupos({ searchParams }: TableGruposProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40%]">Nombre del Grupo</TableHead>
-                <TableHead className="w-[40%]">Semestre / Periodo</TableHead>
-                <TableHead className="text-center w-[20%]">Acciones</TableHead>
+                <TableHead className="w-[25%]">Nombre del Grupo</TableHead>
+                <TableHead className="w-[25%]">Semestre / Periodo</TableHead>
+                <TableHead className="w-[20%] text-center">Alumnos</TableHead>
+                <TableHead className="text-center w-[30%]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {grupos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
                     No se encontraron grupos registrados.
                   </TableCell>
                 </TableRow>
@@ -72,17 +75,33 @@ export default async function TableGrupos({ searchParams }: TableGruposProps) {
                     <TableCell className="font-medium">
                       {g.nombre}
                     </TableCell>
-                    <TableCell >
+                    <TableCell>
                       <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
                         {g.semestre.nombre}
                       </span>
                     </TableCell>
+                    
+                    {/* COLUMNA DE ALUMNOS MODIFICADA */}
+                    <TableCell className="text-center">
+                      <Link 
+                        href={`/grupos/inscripciones/${g.id}`}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-cyan-950/30 hover:bg-cyan-900/50 border border-cyan-800/50 transition-all group"
+                      >
+                        <Users className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        <span className="font-bold">
+                          {/* Aquí asumo que tu action 'getGrupos' incluye el conteo. 
+                              Si no, puedes usar g.inscripciones.length si está incluido */}
+                          {g._count?.inscripciones || 0}
+                        </span>
+                      </Link>
+                    </TableCell>
+
                     <TableCell className="text-center">
                       <GrupoActions 
                         grupoId={g.id} 
                         grupoName={g.nombre} 
                         grupoFullData={g}
-                        semestres={semestres} // Importante para el Dialog de edición
+                        semestres={semestres}
                       />
                     </TableCell>
                   </TableRow>

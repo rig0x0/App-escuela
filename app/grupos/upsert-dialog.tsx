@@ -131,7 +131,7 @@ export function GrupoDialog({ open, setOpen, grupo, semestres }: GrupoDialogProp
                                 </SelectTrigger>
                                 <SelectContent>
                                     {semestres.map((s) => (
-                                        <SelectItem key={s.id} value={s.nombre}>
+                                        <SelectItem key={s.id} value={s.id.toString()}>
                                             {s.nombre}
                                         </SelectItem>
                                     ))}

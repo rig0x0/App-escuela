@@ -6,6 +6,8 @@ import { SearchInput } from "@/components/search-input";
 import { LimitSelector } from "@/components/limit-selector";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import SemestreActions from "./buttons-table";
+import { cn } from "@/lib/utils";
+import { CheckCircle2, XCircle, Users, LayoutGrid } from "lucide-react"; // Importamos iconos nuevos
 
 interface TableSemestresProps {
   searchParams: Promise<{ q?: string; page?: string; limit?: string }>;
@@ -30,7 +32,6 @@ export default async function TableSemestres({ searchParams }: TableSemestresPro
     );
   }
 
-  // Función local para formatear fechas
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('es-MX', {
       day: '2-digit',
@@ -58,16 +59,18 @@ export default async function TableSemestres({ searchParams }: TableSemestresPro
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[30%]">Semestre / Ciclo</TableHead>
-                <TableHead className="w-[25%]">Fecha Inicio</TableHead>
-                <TableHead className="w-[25%]">Fecha Fin</TableHead>
-                <TableHead className="text-center w-[20%]">Acciones</TableHead>
+                <TableHead className="w-[20%]">Semestre / Ciclo</TableHead>
+                <TableHead className="w-[15%]">Fecha Inicio</TableHead>
+                <TableHead className="w-[15%]">Fecha Fin</TableHead>
+                <TableHead className="w-[15%]">Estado</TableHead>
+                <TableHead className="w-[20%]">Grupos / Alumnos</TableHead> {/* Columna de Grupos y Alumnos */}
+                <TableHead className="text-center w-[15%]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {semestres.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                     No se encontraron periodos académicos.
                   </TableCell>
                 </TableRow>
@@ -77,17 +80,55 @@ export default async function TableSemestres({ searchParams }: TableSemestresPro
                     <TableCell className="font-bold text-primary">
                       {s.nombre}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
                       {formatDate(s.fechaInicio)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
                       {formatDate(s.fechaFin)}
                     </TableCell>
+                    <TableCell>
+                      <div className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border",
+                        s.activo
+                          ? "bg-green-500/10 text-green-600 border-green-500/20"
+                          : "bg-slate-500/10 text-slate-600 border-slate-500/20"
+                      )}>
+                        {s.activo ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Activo
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-3.5 w-3.5" />
+                            Inactivo
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+
+                    {/* NUEVA COLUMNA G, A (GRUPOS Y ALUMNOS) */}
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        {/* G: Grupos */}
+                        <div className="flex items-center gap-1.5 bg-blue-500/10 text-blue-700 px-2 py-0.5 rounded border border-blue-500/20">
+                          <LayoutGrid className="h-3.5 w-3.5" />
+                          <span className="text-xs font-bold">{s._count?.grupos || 0}</span>
+                        </div>
+
+                        {/* A: Alumnos Globales (del campo grado) */}
+                        <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-700 px-2 py-0.5 rounded border border-amber-500/20">
+                          <Users className="h-3.5 w-3.5" />
+                          <span className="text-xs font-bold">{s.alumnosTotales}</span>
+                        </div>
+                      </div>
+                    </TableCell>
+
                     <TableCell className="text-center">
-                      <SemestreActions 
-                        semestreId={s.id} 
-                        semestreName={s.nombre} 
-                        semestreFullData={s} 
+                      <SemestreActions
+                        semestreId={s.id}
+                        semestreName={s.nombre}
+                        semestreFullData={s}
                       />
                     </TableCell>
                   </TableRow>

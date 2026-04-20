@@ -5,6 +5,13 @@ export const usuarioSchema = z.object({
   email: z.string().email("Correo electrónico no válido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   tipo: z.enum(["ALUMNO", "DOCENTE", "ADMINISTRATIVO", "ADMIN"], "Tipo de usuario no válido"),
+  // Nuevo campo: Opcional, pero si se llena debe ser válido (ej. 10 dígitos)
+  telefono: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^[0-9]{10}$/.test(val), {
+      message: "El teléfono debe tener 10 dígitos numéricos",
+    }),
   // Campos opcionales inicialmente
   matricula: z.string().optional(),
   grado: z.string().optional(),

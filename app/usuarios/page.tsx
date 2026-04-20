@@ -70,7 +70,7 @@ export default async function UsuariosPage({
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>
-                {/*<TableHead>Telefono</TableHead>*/}
+                <TableHead>Telefono</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead className="text-center">Acciones</TableHead>
               </TableRow>
@@ -80,7 +80,7 @@ export default async function UsuariosPage({
                 <TableRow key={u.id} className={index % 2 === 0 ? "bg-muted/30" : ""}>
                   <TableCell>{u.nombre}</TableCell>
                   <TableCell>{u.email}</TableCell>
-                  {/*<TableCell>{u.telefono}</TableCell>*/}
+                  <TableCell>{u.telefono}</TableCell>
                   <TableCell>{u.tipo}</TableCell>
                   <TableCell className="text-center">
                     {/* Le pasamos el ID y el nombre de cada usuario */}

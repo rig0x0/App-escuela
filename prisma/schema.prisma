@@ -12,6 +12,7 @@ model Usuario {
   nombre          String
   email           String           @unique
   password        String   // 👈 este es el importante
+  telefono        String?  // Nuevo campo opcional para el teléfono
   tipo            String   // En lugar de TipoUsuario
   fechaCreacion   DateTime         @default(now())
   // RELACIONES 1 a 1 (Un usuario es O alumno, O docente, etc.)
@@ -48,6 +49,7 @@ model Semestre {
   nombre          String           @unique  // ej. '2026-1'
   fechaInicio     DateTime
   fechaFin        DateTime
+  activo          Boolean  @default(false) // Este es el que agregamos
   grupos          Grupo[]
   asignaciones    AsignacionDocente[]
   calificaciones  Calificacion[]

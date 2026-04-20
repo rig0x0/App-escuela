@@ -140,49 +140,6 @@ export function MateriaDialog({ open, setOpen, materia }: MateriaDialogProps) {
               />
               <ErrorMessage message={errors.descripcion?.[0]} />
             </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="nombre">Responsable</Label>
-              <Select>
-                <SelectTrigger >
-                  <SelectValue placeholder="Asigne un responsable de la materia" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="semestre1">Semestre 1</SelectItem>
-                  <SelectItem value="semestre2">Semestre 2</SelectItem>
-                  <SelectItem value="semestre3">Semestre 3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2 ">
-              <Label htmlFor="nombre">Semestre</Label>
-              <Select>
-                <SelectTrigger >
-                  <SelectValue placeholder="Asigne un semestre" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="semestre1">Semestre 1</SelectItem>
-                  <SelectItem value="semestre2">Semestre 2</SelectItem>
-                  <SelectItem value="semestre3">Semestre 3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="nombre">Carrera Tecnica</Label>
-              <Select>
-                <SelectTrigger >
-                  <SelectValue placeholder="Asigne una carrera técnica" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Agropecuario">Agropecuario</SelectItem>
-                  <SelectItem value="Emprendimiento">Emprendimiento</SelectItem>
-                  <SelectItem value="Tecnico en Informatica">Técnico en Informática</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
           </div>
 
           <DialogFooter className="sm:justify-between gap-2">

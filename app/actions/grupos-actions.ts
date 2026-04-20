@@ -63,7 +63,10 @@ export async function getGrupos({
                     }
                 },
                 include: {
-                    semestre: true,
+                    _count: {
+                        select: { inscripciones: true }
+                    },
+                    semestre: true
                 },
                 skip,
                 take: limit,

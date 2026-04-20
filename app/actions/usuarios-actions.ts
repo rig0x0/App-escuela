@@ -9,14 +9,13 @@ export async function createUsuario(rawData: any) {
   const validation = usuarioSchema.safeParse(rawData);
 
   if (!validation.success) {
-    // Retornamos los errores formateados
     return {
       error: "Datos inválidos",
       details: validation.error.flatten().fieldErrors
     };
   }
 
-  const data = validation.data; // Aquí los datos ya están limpios y tipados
+  const data = validation.data;
 
   try {
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -28,7 +27,8 @@ export async function createUsuario(rawData: any) {
         email: data.email,
         password: hashedPassword,
         tipo: data.tipo,
-        // Usamos escrituras anidadas según el tipo
+        telefono: data.telefono, // 👈 Nuevo campo integrado
+        // Escrituras anidadas según el tipo
         ...(data.tipo === 'ALUMNO' && {
           alumno: {
             create: {
@@ -44,7 +44,6 @@ export async function createUsuario(rawData: any) {
             }
           }
         }),
-        // AQUÍ EL CAMBIO: Solo si es ADMINISTRATIVO (Admin se queda solo en la tabla Usuario)
         ...(data.tipo === 'ADMINISTRATIVO' && {
           administrativo: {
             create: { puesto: data.puesto! }
@@ -53,24 +52,20 @@ export async function createUsuario(rawData: any) {
       },
     });
 
-    // 3. Limpiar el cache para que los cambios se vean reflejados
-    revalidatePath("/usuarios"); // Ajusta a la ruta donde listes tus usuarios
+    revalidatePath("/usuarios");
 
     const { password: _, ...userWithoutPassword } = nuevoUsuario;
     return { success: true, user: userWithoutPassword };
 
   } catch (error: any) {
     console.error("ERROR_CREATING_USER:", error);
-
-    // Manejo de errores comunes (ej. email duplicado)
     if (error.code === 'P2002') {
       return { error: "El correo electrónico o la matrícula ya están registrados." };
     }
-
-    return { error: "Hubo un error al crear el usuario. Intenta de nuevo." };
+    return { error: "Hubo un error al crear el usuario." };
   }
 }
-// app/actions/usuarios-actions.ts
+
 export async function getUsuarios({
   query = '',
   role = '',
@@ -85,21 +80,21 @@ export async function getUsuarios({
   const skip = (page - 1) * limit;
 
   try {
-    // 1. Obtenemos los datos con filtros
     const [usuarios, total] = await Promise.all([
       prisma.usuario.findMany({
         where: {
           AND: [
             query ? {
               OR: [
-                { nombre: { contains: query } }, // SQLite no soporta mode: 'insensitive' nativamente, ojo ahí
+                { nombre: { contains: query } },
                 { email: { contains: query } },
+                { telefono: { contains: query } }, // 👈 También podemos buscar por tel
               ],
             } : {},
             role ? { tipo: role } : {},
           ],
         },
-        include: { // <--- ESTO ES LO QUE FALTA
+        include: {
           alumno: true,
           docente: true,
           administrativo: true,
@@ -108,7 +103,6 @@ export async function getUsuarios({
         take: limit,
         orderBy: { nombre: 'asc' },
       }),
-      // 2. Contamos el total para la paginación
       prisma.usuario.count({
         where: {
           AND: [
@@ -131,54 +125,49 @@ export async function getUsuarios({
     };
   } catch (error) {
     console.error(error);
-    return {
-      usuarios: [],
-      totalPages: 1,
-      totalItems: 0,
-      error: "No se pudieron cargar los usuarios"
-    };
-  }
-}
-
-export async function deleteUsuario(id: number) {
-  try {
-    await prisma.usuario.delete({
-      where: { id },
-    });
-
-    // Esto es CLAVE: obliga a Next.js a refrescar la tabla
-    revalidatePath("/usuarios");
-
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: "No se pudo eliminar el usuario" };
+    return { usuarios: [], totalPages: 1, totalItems: 0, error: "No se pudieron cargar los usuarios" };
   }
 }
 
 export async function updateUsuario(id: number, rawData: any) {
   try {
-    // 1. Extraemos los datos. 'tipo' lo recibimos pero NO lo mandamos a actualizar en Prisma por seguridad.
-    const { password, matricula, grado, departamento, puesto, tipo, ...datosBase } = rawData;
+    // 1. Validamos con Zod (usando .partial() o validando solo lo necesario)
+    // Para simplificar, usamos los datos del rawData directamente aquí ya limpios del form
+    const { password, matricula, grado, departamento, puesto, tipo, telefono, nombre, email } = rawData;
 
-    let dataParaPrisma: any = { ...datosBase };
+    let dataParaPrisma: any = {
+      nombre,
+      email,
+      telefono, // 👈 Actualizamos el teléfono
+    };
 
-    // 2. Hash de password solo si se escribió algo
+    // 2. Hash de password solo si se cambió
     if (password && password.trim() !== "") {
       dataParaPrisma.password = await bcrypt.hash(password, 10);
     }
 
-    // 3. Actualizamos solo la relación correspondiente al tipo actual
+    // 3. Actualización de perfiles específicos (upsert es más seguro que update)
+    // El upsert asegura que si el perfil no existe, lo cree; si existe, lo actualice.
     if (tipo === 'ALUMNO') {
       dataParaPrisma.alumno = {
-        update: { matricula: matricula || '', grado: grado || '' }
+        upsert: {
+          create: { matricula: matricula || '', grado: grado || '' },
+          update: { matricula: matricula || '', grado: grado || '' }
+        }
       };
     } else if (tipo === 'DOCENTE') {
       dataParaPrisma.docente = {
-        update: { departamento: departamento || '' }
+        upsert: {
+          create: { departamento: departamento || '' },
+          update: { departamento: departamento || '' }
+        }
       };
     } else if (tipo === 'ADMINISTRATIVO') {
       dataParaPrisma.administrativo = {
-        update: { puesto: puesto || '' }
+        upsert: {
+          create: { puesto: puesto || '' },
+          update: { puesto: puesto || '' }
+        }
       };
     }
 
@@ -192,8 +181,21 @@ export async function updateUsuario(id: number, rawData: any) {
     const { password: _, ...userSafe } = usuarioActualizado;
     return { success: true, user: userSafe };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("UPDATE_ERROR:", error);
+    if (error.code === 'P2002') return { success: false, error: "El correo o matrícula ya existen." };
     return { success: false, error: "Error al actualizar los datos." };
+  }
+}
+
+export async function deleteUsuario(id: number) {
+  try {
+    await prisma.usuario.delete({
+      where: { id },
+    });
+    revalidatePath("/usuarios");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "No se pudo eliminar el usuario" };
   }
 }
