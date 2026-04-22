@@ -84,6 +84,8 @@ model Grupo {
   semestre        Semestre         @relation(fields: [semestreId], references: [id])
   inscripciones   Inscripcion[]
   calificaciones  Calificacion[]
+
+  horarios      Horario[]        // Un grupo tiene muchas clases en su horario
 }
 
 model Inscripcion {
@@ -115,14 +117,18 @@ model Calificacion {
 }
 
 model Horario {
-  id          Int      @id @default(autoincrement())
-  diaSemana   String   // Lunes, Martes...
-  horaInicio  String   // "07:00"
-  horaFin     String   // "09:00"
-  aula        String   // "Laboratorio 3"
+  id           Int               @id @default(autoincrement())
+  diaSemana    String            // "Lunes", "Martes"...
+  horaInicio   String            // "07:00"
+  horaFin      String            // "09:00"
+  aula         String            // "Aula 101"
   
-  // Relación con la asignación para saber quién y qué materia
+  // Relación con la asignación (Docente + Materia + Semestre)
   asignacionId Int
   asignacion   AsignacionDocente @relation(fields: [asignacionId], references: [id])
+
+  // LA PIEZA CLAVE: Relación con el Grupo
+  grupoId      Int
+  grupo        Grupo             @relation(fields: [grupoId], references: [id])
 }
 

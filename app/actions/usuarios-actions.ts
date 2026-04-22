@@ -199,3 +199,14 @@ export async function deleteUsuario(id: number) {
     return { success: false, error: "No se pudo eliminar el usuario" };
   }
 }
+
+export async function getUsuarioParaNavbar(id: number) {
+  return await prisma.usuario.findUnique({
+    where: { id },
+    select: {
+      nombre: true,
+      email: true,
+      tipo: true,
+    }
+  });
+}

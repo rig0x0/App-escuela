@@ -64,7 +64,9 @@ export async function getGrupos({
                 },
                 include: {
                     _count: {
-                        select: { inscripciones: true }
+                        select: { inscripciones: true, 
+                                  horarios: true // 👈 ESTO ES LO QUE FALTA 
+                                }
                     },
                     semestre: true
                 },
@@ -107,4 +109,28 @@ export async function deleteGrupo(id: number) {
             error: "No se pudo eliminar el grupo. Verifica si tiene alumnos inscritos."
         };
     }
+}
+
+export async function getGrupoById(id: number) {
+  try {
+    return await prisma.grupo.findUnique({
+      where: { id },
+      include: {
+        semestre: true,
+        horarios: {
+            include: {
+                asignacion: {
+                    include: {
+                        materia: true,
+                        docente: { include: { usuario: true } }
+                    }
+                }
+            }
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error al obtener grupo:", error);
+    return null;
+  }
 }
