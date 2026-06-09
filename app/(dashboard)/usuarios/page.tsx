@@ -9,6 +9,7 @@ import { SearchInput } from "@/components/search-input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import ButtonActions from "@/components/button-actions";
 
+
 export default async function UsuariosPage({
   searchParams,
 }: {

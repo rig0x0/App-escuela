@@ -4,6 +4,8 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 
+export const dynamic = "force-dynamic"; // 👈 Aplica para TODOS sus hijos automáticamente
+
 export default async function DashboardLayout({
   children,
 }: {
