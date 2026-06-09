@@ -8,6 +8,19 @@ export default auth((req) => {
 
   const pathname = nextUrl.pathname;
 
+  // =========================================================================
+  // EXCEPCIÓN CRÍTICA: Detener el middleware si es una ruta interna de Auth
+  // =========================================================================
+  // Si Next-Auth está validando la sesión o ejecutando un login/callback, 
+  // debemos dejarlo pasar directamente usando NextResponse.next()
+  if (
+    pathname.startsWith("/api/auth") || 
+    pathname.startsWith("/_next") || 
+    pathname.toLowerCase().includes("login")
+  ) {
+    return NextResponse.next();
+  }
+
   // 1. Definir rutas públicas
   const isPublicRoute = pathname === "/"; 
   
@@ -32,7 +45,6 @@ export default auth((req) => {
   }
 
   // CASO B: Usuario logueado intentando entrar al Login (ruta pública "/")
-  // Aquí es donde aplicamos la redirección inteligente por rol
   if (isLoggedIn && isPublicRoute) {
     let dashboardPath = "/"; // Ruta base por si acaso
 
