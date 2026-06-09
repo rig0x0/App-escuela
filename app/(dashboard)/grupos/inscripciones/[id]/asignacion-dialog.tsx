@@ -69,7 +69,7 @@ export default function AsignacionDialog({ grupoId, semestreAcademicoId }: Props
 
   return (
     <Dialog onOpenChange={(open) => !open && setGradoSeleccionado(null)}>
-      <DialogTrigger asChild>
+      <DialogTrigger >
         <Button>Asignar Alumnos</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md h-[550px] flex flex-col p-0"> {/* Altura fija para controlar el scroll */}
@@ -128,7 +128,7 @@ export default function AsignacionDialog({ grupoId, semestreAcademicoId }: Props
 
         <div className="p-6 pt-2 border-t bg-muted/5">
           <DialogFooter>
-            <DialogClose asChild>
+            <DialogClose >
               <Button variant="outline" className="w-full">Cerrar</Button>
             </DialogClose>
           </DialogFooter>
