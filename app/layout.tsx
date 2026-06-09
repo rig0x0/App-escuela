@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+export const dynamic = "force-dynamic"; // 👈 Aplica para TODOS sus hijos automáticamente
 
 
 const geistSans = Geist({
