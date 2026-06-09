@@ -34,7 +34,7 @@ export default auth((req) => {
   // CASO B: Usuario logueado intentando entrar al Login (ruta pública "/")
   // Aquí es donde aplicamos la redirección inteligente por rol
   if (isLoggedIn && isPublicRoute) {
-    let dashboardPath = "/dashboard"; // Ruta base por si acaso
+    let dashboardPath = "/"; // Ruta base por si acaso
 
     if (userRole === "ADMIN") dashboardPath = "/usuarios";
     else if (userRole === "ADMINISTRATIVO") dashboardPath = "/grupos";
@@ -48,22 +48,22 @@ export default auth((req) => {
 
   // Si no es ADMIN e intenta entrar a rutas de Admin
   if (isOnlyAdminRoute && userRole !== "ADMIN") {
-    return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    return NextResponse.redirect(new URL("/", nextUrl));
   }
 
   // Si no es ADMIN ni ADMINISTRATIVO e intenta entrar a grupos/semestre
   if (isSharedAdminRoute && !(userRole === "ADMIN" || userRole === "ADMINISTRATIVO")) {
-    return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    return NextResponse.redirect(new URL("/", nextUrl));
   }
 
   // Si intenta entrar a rutas de Docente y no lo es
   if (isDocenteRoute && userRole !== "DOCENTE") {
-    return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    return NextResponse.redirect(new URL("/", nextUrl));
   }
 
   // Si intenta entrar a rutas de Alumno y no lo es
   if (isAlumnoRoute && userRole !== "ALUMNO") {
-    return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    return NextResponse.redirect(new URL("/", nextUrl));
   }
 
   // Si pasa todas las validaciones, permitimos la respuesta y quitamos el caché
