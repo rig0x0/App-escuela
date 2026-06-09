@@ -71,7 +71,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
             {(role === "ADMIN" || role === "ADMINISTRATIVO") && (
               <Collapsible className="group/collapsible">
                 <SidebarMenuItem>
-                  <CollapsibleTrigger asChild className="w-full">
+                  <CollapsibleTrigger  className="w-full">
                     <SidebarMenuButton>
                       <University className="text-[#93764F]"/>
                       <span className="text-xl text-[#93764F]">Escuela</span>

@@ -114,7 +114,7 @@ const handleTipoChange = (value: string | null) => {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
+      <DialogTrigger >
         <Button className="gap-2">
           <UserPlus className="h-4 w-4" />
           Agregar Usuario
@@ -269,7 +269,7 @@ const handleTipoChange = (value: string | null) => {
           </ScrollArea>
 
           <DialogFooter className="p-6 pt-2 border-t bg-slate-50">
-            <DialogClose asChild>
+            <DialogClose >
               <Button type="button" variant="ghost" disabled={isPending}>Cancelar</Button>
             </DialogClose>
             <Button type="submit" disabled={isPending}>

@@ -59,7 +59,7 @@ export default function SemestreActions({ semestreId, semestreName, semestreFull
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger >
           <Button variant="ghost" size="icon" className="size-8" disabled={isPending || isAutoAssigning}>
             {isAutoAssigning ? (
               <Loader2 className="size-4 animate-spin" />

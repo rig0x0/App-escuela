@@ -38,7 +38,7 @@ export function AsignarDocenteDialog({ materiaId }: { materiaId: number }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger >
         <Button variant="outline" size="sm" className="h-8 text-xs border-dashed border-primary/50 text-primary hover:bg-primary/5">
           <UserPlus className="mr-2 h-3 w-3" />
           Asignar Responsable

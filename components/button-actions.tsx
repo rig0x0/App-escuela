@@ -34,7 +34,7 @@ export default function ButtonActions({ userId, userName, userFullData }: Button
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger >
           <Button variant="ghost" size="icon" className="size-8" disabled={isPending}>
             <MoreHorizontalIcon className="size-4" />
             <span className="sr-only">Open menu</span>

@@ -158,7 +158,7 @@ export function SemestreDialog({ open, setOpen, semestre }: { open: boolean, set
           </div>
 
           <DialogFooter className="sm:justify-between gap-2 border-t pt-4">
-            <DialogClose asChild>
+            <DialogClose >
               <Button type="button" variant="ghost" disabled={loading}>Cancelar</Button>
             </DialogClose>
             <Button type="submit" disabled={loading} className="gap-2">

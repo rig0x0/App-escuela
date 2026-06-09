@@ -29,7 +29,7 @@ export function ComboAsignacion({ options, value, onChange }: ComboAsignacionPro
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger >
         <Button
           variant="outline"
           role="combobox"

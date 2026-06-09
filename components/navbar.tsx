@@ -44,7 +44,7 @@ export default function Navbar({ user }: NavbarProps) {
           
           {user && (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger >
                 <div className='flex items-center gap-x-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 p-2 rounded-lg transition-colors'>
                   <div className='text-right hidden sm:block'>
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-none">

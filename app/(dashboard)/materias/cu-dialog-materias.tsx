@@ -143,7 +143,7 @@ export function MateriaDialog({ open, setOpen, materia }: MateriaDialogProps) {
           </div>
 
           <DialogFooter className="sm:justify-between gap-2">
-            <DialogClose asChild>
+            <DialogClose >
               <Button type="button" variant="secondary">Cancelar</Button>
             </DialogClose>
             <Button type="submit">

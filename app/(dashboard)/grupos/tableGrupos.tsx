@@ -126,7 +126,7 @@ export default async function TableGrupos({ searchParams }: TableGruposProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          asChild
+                          
                           className=" h-9 justify-start border-2 border-dashed border-muted-foreground/20 hover:border-primary/50 hover:bg-primary/5 group"
                         >
                           <Link href={`/grupos/horarios/${g.id}`} className="inline-flex items-center">

@@ -38,7 +38,7 @@ export default function GrupoActions({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger >
           <Button variant="ghost" size="icon" className="size-8" disabled={isPending}>
             <MoreHorizontalIcon className="size-4" />
             <span className="sr-only">Acciones</span>

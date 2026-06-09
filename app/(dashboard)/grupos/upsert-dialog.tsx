@@ -142,7 +142,7 @@ export function GrupoDialog({ open, setOpen, grupo, semestres }: GrupoDialogProp
                     </div>
 
                     <DialogFooter className="gap-2">
-                        <DialogClose asChild>
+                        <DialogClose >
                             <Button type="button" variant="secondary" disabled={isPending}>
                                 Cancelar
                             </Button>
