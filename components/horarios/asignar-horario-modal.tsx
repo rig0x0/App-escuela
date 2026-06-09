@@ -5,10 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ComboAsignacion } from "@/components/horarios/combobox-asigacion"; // El que creamos arriba
+import { ComboAsignacion } from "@/components/horarios/combobox-asigacion"; 
 import { getAsignacionesDisponibles } from "@/app/actions/horarios-actions";
 import { createHorario } from "@/app/actions/horarios-actions";
-import { toast } from "sonner"; // O la librería de notificaciones que uses
+import { toast } from "sonner"; 
 
 interface AsignarHorarioModalProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ interface AsignarHorarioModalProps {
   dia: string;
   hora: string;
   grupoId: number;
-  semestreId: number; // Necesitamos el ID del semestre para filtrar
+  semestreId?: number; // 👈 1. El "?" lo vuelve opcional. Ya no marcará error en el padre.
 }
 
 export function AsignarHorarioModal({ isOpen, onClose, dia, hora, grupoId, semestreId }: AsignarHorarioModalProps) {
@@ -26,44 +26,45 @@ export function AsignarHorarioModal({ isOpen, onClose, dia, hora, grupoId, semes
 
   // Cargar las materias disponibles cuando se abre el modal
   useEffect(() => {
-    if (isOpen) {
+    // 2. Protegemos la función: Solo se ejecuta si el modal está abierto Y si existe el semestreId
+    if (isOpen && semestreId) {
       getAsignacionesDisponibles(semestreId).then(setAsignaciones);
     }
   }, [isOpen, semestreId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  const formData = new FormData(e.currentTarget as HTMLFormElement);
-  const aula = formData.get("aula") as string;
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const aula = formData.get("aula") as string;
 
-  if (!asignacionId) {
-    toast.error("Por favor, selecciona una materia");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const result = await createHorario({
-      diaSemana: dia,
-      horaInicio: hora,
-      aula: aula,
-      grupoId: grupoId,
-      asignacionId: Number(asignacionId),
-    });
-
-    if (result.error) {
-      toast.error(result.error);
-    } else {
-      toast.success("¡Clase asignada correctamente!");
-      onClose(); // Cerramos el modal
+    if (!asignacionId) {
+      toast.error("Por favor, selecciona una materia");
+      return;
     }
-  } catch (error) {
-    toast.error("Error de conexión");
-  } finally {
-    setLoading(false);
-  }
-};
+
+    setLoading(true);
+
+    try {
+      const result = await createHorario({
+        diaSemana: dia,
+        horaInicio: hora,
+        aula: aula,
+        grupoId: grupoId,
+        asignacionId: Number(asignacionId),
+      });
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("¡Clase asignada correctamente!");
+        onClose(); 
+      }
+    } catch (error) {
+      toast.error("Error de conexión");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
